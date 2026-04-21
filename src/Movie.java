@@ -25,6 +25,10 @@ public class Movie {
         return director;
     }
 
+    public List<Cast> getCast() {
+        return cast;
+    }
+
     @Override
     public String toString() {
         return String.format("Фильм: %s (%d)\nОписание: %s\nРежиссер: %s\nАктеры: %s\n",

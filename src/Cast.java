@@ -12,6 +12,14 @@ public class Cast {
         return fullName;
     }
 
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
+
     @Override
     public String toString() {
         return fullName + " (в роли " + role + ")";
