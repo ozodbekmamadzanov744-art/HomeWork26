@@ -4,33 +4,29 @@ import java.util.Scanner;
 public class MovieApp {
     private final MovieService movieService = new MovieService();
     private final Scanner scanner = new Scanner(System.in);
-    private List<Movie> movies;
+    private final List<Movie> mainCollection;
 
     public MovieApp(List<Movie> movies) {
-        this.movies = movies;
+        this.mainCollection = movies;
     }
 
     public void start() {
         while (true) {
-            System.out.println("\n======= МЕНЮ КОЛЛЕКЦИИ =======");
+            System.out.println("\n=== СИСТЕМА УПРАВЛЕНИЯ КИНОТЕКОЙ ===");
             System.out.println("1. Показать все фильмы");
-            System.out.println("2. Поиск по названию (Задание 1)");
-            System.out.println("3. Сортировка по году (возр.)");
-            System.out.println("4. Сортировка по названию (А-Я)");
-            System.out.println("------------------------------");
-            System.out.println("5. Найти фильмы по АКТЕРУ (Задание 2)");
-            System.out.println("6. Найти фильмы по РЕЖИССЕРУ");
-            System.out.println("7. Найти фильмы по ГОДУ");
-            System.out.println("8. Показать роли актера в фильмах");
-            System.out.println("9. Список всех актеров (без дублей)");
+            System.out.println("2. Поиск по названию");
+            System.out.println("3. Сортировки основной коллекции (Год/Имя/Режиссер)");
+            System.out.println("4. Поиск фильмов по АКЕРУ");
+            System.out.println("5. Поиск фильмов по РЕЖИССЕРУ");
+            System.out.println("6. Поиск фильмов по ГОДУ");
+            System.out.println("7. Список всех актеров и ролей");
             System.out.println("0. Выход");
-            System.out.print("Выберите действие: ");
+            System.out.print("Выберите пункт: ");
 
             int choice = scanner.nextInt();
             scanner.nextLine();
 
             if (choice == 0) break;
-
             handleChoice(choice);
         }
     }
@@ -38,57 +34,63 @@ public class MovieApp {
     private void handleChoice(int choice) {
         switch (choice) {
             case 1:
-                printMovies(movies);
+                printMovies(mainCollection);
                 break;
             case 2:
-                System.out.print("Введите название фильма: ");
-                String title = scanner.nextLine();
-                printMovies(movieService.findByName(movies, title));
+                System.out.print("Введите название: ");
+                processSelection(movieService.findByName(mainCollection, scanner.nextLine()));
                 break;
             case 3:
-                printMovies(movieService.sortByYearAscending(movies));
+                showSortMenu();
                 break;
             case 4:
-                printMovies(movieService.sortByName(movies));
+                System.out.print("Имя актера: ");
+                processSelection(movieService.findMoviesByActor(mainCollection, scanner.nextLine()));
                 break;
             case 5:
-                System.out.print("Введите имя актера: ");
-                String actor = scanner.nextLine();
-                // Используем поиск через Map из MovieService
-                printMovies(movieService.findMoviesByActor(movies, actor));
+                System.out.print("Имя режиссера: ");
+                processSelection(movieService.findMoviesByDirector(mainCollection, scanner.nextLine()));
                 break;
             case 6:
-                System.out.print("Введите имя режиссера: ");
-                String director = scanner.nextLine();
-                printMovies(movieService.findMoviesByDirector(movies, director));
+                System.out.print("Год: ");
+                processSelection(movieService.findMoviesByYear(mainCollection, scanner.nextInt()));
                 break;
             case 7:
-                System.out.print("Введите год выпуска: ");
-                int year = scanner.nextInt();
-                printMovies(movieService.findMoviesByYear(movies, year));
-                break;
-            case 8:
-                System.out.print("Введите имя актера для поиска ролей: ");
-                String actorName = scanner.nextLine();
-                movieService.printActorRoles(movies, actorName);
-                break;
-            case 9:
-                System.out.println("Список всех актеров и их ролей:");
-                movieService.printAllCast(movies);
+                movieService.printAllCast(mainCollection);
                 break;
             default:
-                System.out.println("Неверный ввод.");
+                System.out.println("Ошибка выбора.");
         }
     }
 
-    private void printMovies(List<Movie> listToPrint) {
-        if (listToPrint == null || listToPrint.isEmpty()) {
+    private void processSelection(List<Movie> selection) {
+        if (selection.isEmpty()) {
             System.out.println("Ничего не найдено.");
             return;
         }
-        for (Movie m : listToPrint) {
-            System.out.println(m);
-            System.out.println("---------------------------");
+        printMovies(selection);
+
+        System.out.println("\n[БОНУС] Желаете отсортировать этот результат?");
+        System.out.println("1. По году | 2. По названию | 0. Пропустить");
+        int subChoice = scanner.nextInt();
+
+        if (subChoice == 1) {
+            printMovies(movieService.sortByYearAscending(selection));
+        } else if (subChoice == 2) {
+            printMovies(movieService.sortByName(selection));
         }
+    }
+
+    private void showSortMenu() {
+        System.out.println("1. По году (возр.) | 2. По названию | 3. По режиссеру");
+        int sortType = scanner.nextInt();
+        if (sortType == 1) printMovies(movieService.sortByYearAscending(mainCollection));
+        else if (sortType == 2) printMovies(movieService.sortByName(mainCollection));
+        else if (sortType == 3) printMovies(movieService.sortByDirector(mainCollection));
+    }
+
+    private void printMovies(List<Movie> list) {
+        System.out.println("\n--- Результат (" + list.size() + ") ---");
+        list.forEach(m -> System.out.println(m + "\n-------------------"));
     }
 }
